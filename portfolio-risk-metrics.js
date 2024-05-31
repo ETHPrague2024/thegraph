@@ -54,7 +54,20 @@ const conversionRates = {
   'ERC1155': 10  // Example: 1 ERC1155 unit = 10 USD
 };
 
-async function calculateEADAndLGD() {
+// Function to calculate 12-month PD
+function calculate12MonthPD(loans) {
+  const now = Date.now() / 1000; // Current timestamp in seconds
+  const twelveMonthsAgo = now - (365 * 24 * 60 * 60); // Timestamp for 12 months ago
+
+  const loansInPeriod = loans.filter(loan => loan.blockTimestamp >= twelveMonthsAgo);
+  const defaultedLoans = loansInPeriod.filter(loan => loan.defaulted);
+
+  const pd = loansInPeriod.length ? defaultedLoans.length / loansInPeriod.length : 0;
+  return { pd, defaultedCount: defaultedLoans.length, totalCount: loansInPeriod.length };
+}
+
+// Function to calculate EAD, LGD, and ECL
+async function calculateRiskMetrics() {
   const loanCreatedsData = await fetchData(loanCreatedsQuery);
   const loanClaimedsData = await fetchData(loanClaimedsQuery);
 
@@ -88,12 +101,25 @@ async function calculateEADAndLGD() {
     }
   }
 
-  const LGD = totalCollateral > 0 ? totalEAD / totalCollateral/1e8 : 0;
+  // Adjust EAD and Collateral values to account for decimals
+  const adjustedEAD = totalEAD / 1e12;
+  const adjustedCollateral = totalCollateral / 1e4;
 
-  console.log(`Total EAD (in USD): ${totalEAD/1e12}`);
-  console.log(`Total Collateral (in USD): ${totalCollateral/1e4}`);
+  // Calculate LGD as total EAD divided by total Collateral
+  const LGD = adjustedCollateral > 0 ? adjustedEAD / adjustedCollateral : 0;
+
+  // Calculate 12-month PD
+  const { pd: PD, defaultedCount, totalCount } = calculate12MonthPD(loanClaimedsData.loanclaimeds);
+
+  // Calculate Expected Credit Loss (ECL) as PD * LGD * EAD
+  const ECL = PD * LGD * adjustedEAD;
+
+  console.log(`Total EAD (in USD): ${adjustedEAD}`);
+  console.log(`Total Collateral (in USD): ${adjustedCollateral}`);
   console.log(`Loss Given Default (LGD): ${LGD}`);
   console.log(`Number of Defaults: ${numberOfDefaults}`);
+  console.log(`Probability of Default (PD): ${PD}`);
+  console.log(`Expected Credit Loss (ECL): ${ECL}`);
 }
 
-calculateEADAndLGD();
+calculateRiskMetrics();
