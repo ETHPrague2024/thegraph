@@ -47,23 +47,16 @@ async function fetchData(query) {
   }
 }
 
-// Fixed conversion rates (assumed)
-const conversionRates = {
-  'ERC20': 1,  // 1 ERC20 unit = 1 USD
-  'ERC721': 100, // Example: 1 ERC721 token = 100 USD
-  'ERC1155': 10  // Example: 1 ERC1155 unit = 10 USD
-};
-
-// Function to calculate 12-month PD
-function calculate12MonthPD(loans) {
+// Function to calculate 12-month Observed Default Rate
+function calculate12MonthObservedDefaultRate(loans) {
   const now = Date.now() / 1000; // Current timestamp in seconds
   const twelveMonthsAgo = now - (365 * 24 * 60 * 60); // Timestamp for 12 months ago
 
   const loansInPeriod = loans.filter(loan => loan.blockTimestamp >= twelveMonthsAgo);
   const defaultedLoans = loansInPeriod.filter(loan => loan.defaulted);
 
-  const pd = loansInPeriod.length ? defaultedLoans.length / loansInPeriod.length : 0;
-  return { pd, defaultedCount: defaultedLoans.length, totalCount: loansInPeriod.length };
+  const observedDefaultRate = loansInPeriod.length ? defaultedLoans.length / loansInPeriod.length : 0;
+  return { observedDefaultRate, defaultedCount: defaultedLoans.length, totalCount: loansInPeriod.length };
 }
 
 // Function to calculate EAD, LGD, and ECL
@@ -92,33 +85,42 @@ async function calculateRiskMetrics() {
   for (const loan of defaultedLoans) {
     const loanDetail = loanDetails[loan.loanId];
     if (loanDetail) {
-      const collateralValue = loanDetail.terms_collateral_amount * (conversionRates[loanDetail.terms_collateral_category] || 1);
-      const exposureValue = loanDetail.terms_loanRepayAmount * (conversionRates[loanDetail.terms_asset_category] || 1);
+      console.log(`Loan ID: ${loan.loanId}`);
+      console.log(`Collateral Category: ${loanDetail.terms_collateral_category}`);
+      console.log(`Collateral Address: ${loanDetail.terms_collateral_assetAddress}`);
+      console.log(`Collateral ID: ${loanDetail.terms_collateral_id}`);
+      console.log(`Collateral Amount: ${loanDetail.terms_collateral_amount}`);
+      console.log(`Asset Category: ${loanDetail.terms_asset_category}`);
+      console.log(`Asset Address: ${loanDetail.terms_asset_assetAddress}`);
+      console.log(`Asset ID: ${loanDetail.terms_asset_id}`);
+      console.log(`Block Timestamp: ${loanDetail.blockTimestamp}`);
+      console.log(`Loan Repay Amount: ${loanDetail.terms_loanRepayAmount}`);
+      console.log('---------------------------');
 
-      totalEAD += exposureValue;
-      totalCollateral += collateralValue;
+      totalEAD += loanDetail.terms_loanRepayAmount;
+      totalCollateral += loanDetail.terms_collateral_amount;
       numberOfDefaults += 1;
     }
   }
 
   // Adjust EAD and Collateral values to account for decimals
-  const adjustedEAD = totalEAD / 1e12;
-  const adjustedCollateral = totalCollateral / 1e4;
+  const adjustedEAD = totalEAD / 1e22;
+  const adjustedCollateral = totalCollateral / 1e5;
 
   // Calculate LGD as total EAD divided by total Collateral
-  const LGD = adjustedCollateral > 0 ? adjustedEAD / adjustedCollateral : 0;
+  const LGD = adjustedCollateral > 0 ? adjustedCollateral / adjustedEAD : 0;
 
-  // Calculate 12-month PD
-  const { pd: PD, defaultedCount, totalCount } = calculate12MonthPD(loanClaimedsData.loanclaimeds);
+  // Calculate 12-month Observed Default Rate
+  const { observedDefaultRate, defaultedCount, totalCount } = calculate12MonthObservedDefaultRate(loanClaimedsData.loanclaimeds);
 
-  // Calculate Expected Credit Loss (ECL) as PD * LGD * EAD
-  const ECL = PD * LGD * adjustedEAD;
+  // Calculate Expected Credit Loss (ECL) as Observed Default Rate * LGD * EAD
+  const ECL = observedDefaultRate * LGD * adjustedEAD;
 
   console.log(`Total EAD (in USD): ${adjustedEAD}`);
   console.log(`Total Collateral (in USD): ${adjustedCollateral}`);
   console.log(`Loss Given Default (LGD): ${LGD}`);
   console.log(`Number of Defaults: ${numberOfDefaults}`);
-  console.log(`Probability of Default (PD): ${PD}`);
+  console.log(`Observed Default Rate: ${observedDefaultRate}`);
   console.log(`Expected Credit Loss (ECL): ${ECL}`);
 }
 
