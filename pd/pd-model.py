@@ -25,3 +25,7 @@ model_params = {
 
 with open('model_params.json', 'w') as f:
     json.dump(model_params, f)
+
+# Optionally, evaluate the model
+accuracy = model.score(X_test, y_test)
+print(f'Model accuracy: {accuracy}')

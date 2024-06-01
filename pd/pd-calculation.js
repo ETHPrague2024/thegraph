@@ -1,10 +1,13 @@
 import { GraphQLClient, gql } from 'graphql-request';
 import fs from 'fs';
+import fetch, { Headers } from 'node-fetch';
+
+global.Headers = Headers;
+global.fetch = fetch;
 
 const endpoint = 'https://api.studio.thegraph.com/query/77024/pwn-graph/v0.0.1';
 const graphQLClient = new GraphQLClient(endpoint);
 
-// Define GraphQL queries
 const loanCreatedsQuery = gql`
 {
   loancreateds(first: 1000) {
@@ -17,7 +20,6 @@ const loanCreatedsQuery = gql`
 }
 `;
 
-// Fetch data function
 async function fetchData(query) {
   try {
     const data = await graphQLClient.request(query);
@@ -28,24 +30,20 @@ async function fetchData(query) {
   }
 }
 
-// Sigmoid function for logistic regression
 function sigmoid(z) {
   return 1 / (1 + Math.exp(-z));
 }
 
-// Predict function using the saved model parameters
 function predictProbability(features, coefficients, intercept) {
   const z = intercept + features.reduce((sum, feature, index) => sum + feature * coefficients[index], 0);
   return sigmoid(z);
 }
 
 (async () => {
-  // Load model parameters
   const modelParams = JSON.parse(fs.readFileSync('model_params.json', 'utf8'));
   const coefficients = modelParams.coefficients[0];
   const intercept = modelParams.intercept[0];
 
-  // Fetch loan data
   const loanCreatedsData = await fetchData(loanCreatedsQuery);
 
   if (loanCreatedsData) {

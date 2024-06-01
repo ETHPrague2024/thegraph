@@ -1,6 +1,11 @@
 import { promises as fs } from 'fs';
 import { GraphQLClient, gql } from 'graphql-request';
 import path from 'path';
+import fetch, { Headers } from 'node-fetch';
+
+// Polyfill for Headers and fetch
+global.Headers = Headers;
+global.fetch = fetch;
 
 // Replace with your subgraph's endpoint
 const endpoint = 'https://api.studio.thegraph.com/query/77024/pwn-graph/v0.0.1';
@@ -38,7 +43,6 @@ const loanClaimedsQuery = gql`
 }
 `;
 
-// Fetch data function
 async function fetchData(query) {
   try {
     const data = await graphQLClient.request(query);
@@ -49,14 +53,13 @@ async function fetchData(query) {
   }
 }
 
-// Write data to CSV
 async function writeDataToCSV(data, filename) {
   const header = "loanId,termsCollateralCategory,termsCollateralAmount,termsAssetAmount,termsLoanRepayAmount,defaulted\n";
   const rows = data.map(loan => {
     return `${loan.loanId},${loan.termsCollateralCategory},${loan.termsCollateralAmount},${loan.termsAssetAmount},${loan.termsLoanRepayAmount},${loan.defaulted}`;
   }).join('\n');
   
-  await fs.writeFile(filename, header + rows);
+  await fs.writeFile(filename, header + rows, 'utf8');
 }
 
 (async () => {
