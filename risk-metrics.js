@@ -188,6 +188,9 @@ const processLoans = async () => {
     const observedDefaultRate = totalLoans > 0 ? numberOfDefaults / totalLoans : 0;
     const averageLGD = totalValidLGDLoans > 0 ? totalLGD / totalValidLGDLoans : 0;
 
+    // Calculate Expected Credit Loss (ECL)
+    const totalECL = totalEAD * observedDefaultRate * averageLGD;
+
     console.log(`Total Number of Loans: ${totalLoans}`);
     console.log(`Total Number of Defaults: ${numberOfDefaults}`);
     console.log(`Observed Default Rate: ${observedDefaultRate}`);
@@ -195,6 +198,7 @@ const processLoans = async () => {
     console.log(`Total Collateral Value in USD: ${totalCollateralValueUSD}`);
     console.log(`Total EAD in USD: ${totalEAD}`);
     console.log(`Average LGD: ${averageLGD}`);
+    console.log(`Total ECL in USD: ${totalECL}`);
 };
 
 processLoans();
