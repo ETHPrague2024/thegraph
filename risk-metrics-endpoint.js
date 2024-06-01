@@ -7,7 +7,7 @@ global.Headers = Headers;
 global.fetch = fetch;
 
 const app = express();
-const port = 3000;
+const port = 8000;
 
 const endpoint = 'https://api.studio.thegraph.com/query/77024/pwn-graph/v0.0.1';
 const graphQLClient = new GraphQLClient(endpoint);
@@ -208,7 +208,7 @@ const processLoans = async () => {
     };
 };
 
-app.get('/metrics', async (req, res) => {
+app.get('/api/getMetrics', async (req, res) => {
     try {
         const metrics = await processLoans();
         res.json(metrics);
