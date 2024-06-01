@@ -4,7 +4,7 @@ import 'dotenv/config';
 
 
 const app = express();
-const port = 3000;
+const port = 8000;
 
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
 
@@ -73,13 +73,13 @@ function computeRating(data) {
   // Scoring based on first transaction date
   const accountAge = data.firstTransactionDate ? (new Date() - new Date(data.firstTransactionDate * 1000)) / (1000 * 60 * 60 * 24 * 365) : 0;
   let accountAgeScore;
-  if (accountAge > 5) {
+  if (accountAge > 0.4) {
     accountAgeScore = 1;
-  } else if (accountAge > 3) {
+  } else if (accountAge > 0.3) {
     accountAgeScore = 2;
-  } else if (accountAge > 2) {
+  } else if (accountAge > 0.2) {
     accountAgeScore = 3;
-  } else if (accountAge > 1) {
+  } else if (accountAge > 0.1) {
     accountAgeScore = 4;
   } else {
     accountAgeScore = 5;
@@ -89,13 +89,13 @@ function computeRating(data) {
 
   // Scoring based on number of tokens held
   let numberOfTokensScore;
-  if (data.numberOfTokens > 100) {
+  if (data.numberOfTokens > 4) {
     numberOfTokensScore = 1;
-  } else if (data.numberOfTokens > 50) {
+  } else if (data.numberOfTokens > 3) {
     numberOfTokensScore = 2;
-  } else if (data.numberOfTokens > 10) {
+  } else if (data.numberOfTokens > 2) {
     numberOfTokensScore = 3;
-  } else if (data.numberOfTokens > 5) {
+  } else if (data.numberOfTokens > 1) {
     numberOfTokensScore = 4;
   } else {
     numberOfTokensScore = 5;
@@ -105,13 +105,13 @@ function computeRating(data) {
 
   // Scoring based on current value
   let currentValueScore;
-  if (data.currentValue > 100) {
+  if (data.currentValue > 4) {
     currentValueScore = 1;
-  } else if (data.currentValue > 50) {
+  } else if (data.currentValue > 3) {
     currentValueScore = 2;
-  } else if (data.currentValue > 20) {
+  } else if (data.currentValue > 2) {
     currentValueScore = 3;
-  } else if (data.currentValue > 10) {
+  } else if (data.currentValue > 1) {
     currentValueScore = 4;
   } else {
     currentValueScore = 5;
@@ -121,13 +121,13 @@ function computeRating(data) {
 
   // Scoring based on total value of transactions
   let totalValueOfTransactionsScore;
-  if (data.totalValueOfTransactions > 1000) {
+  if (data.totalValueOfTransactions > 9) {
     totalValueOfTransactionsScore = 1;
-  } else if (data.totalValueOfTransactions > 500) {
+  } else if (data.totalValueOfTransactions > 7) {
     totalValueOfTransactionsScore = 2;
-  } else if (data.totalValueOfTransactions > 100) {
+  } else if (data.totalValueOfTransactions > 5) {
     totalValueOfTransactionsScore = 3;
-  } else if (data.totalValueOfTransactions > 50) {
+  } else if (data.totalValueOfTransactions > 3) {
     totalValueOfTransactionsScore = 4;
   } else {
     totalValueOfTransactionsScore = 5;
@@ -137,13 +137,13 @@ function computeRating(data) {
 
   // Scoring based on NFTs (participation in events/airdrops)
   let nftsScore;
-  if (data.prooaps > 100) {
+  if (data.prooaps > 4) {
     nftsScore = 1;
-  } else if (data.prooaps > 50) {
+  } else if (data.prooaps > 3) {
     nftsScore = 2;
-  } else if (data.prooaps > 10) {
+  } else if (data.prooaps > 2) {
     nftsScore = 3;
-  } else if (data.prooaps > 5) {
+  } else if (data.prooaps > 1) {
     nftsScore = 4;
   } else {
     nftsScore = 5;
