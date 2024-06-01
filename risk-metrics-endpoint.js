@@ -187,20 +187,13 @@ const processLoans = async () => {
 };
 
 app.get('/metrics', async (req, res) => {
-  const now = Date.now();
-  if (cache.data && cache.timestamp && (now - cache.timestamp < CACHE_DURATION)) {
-    return res.json(cache.data);
-  }
-
-  try {
-    const metrics = await processLoans();
-    cache.data = metrics;
-    cache.timestamp = now;
-    res.json(metrics);
-  } catch (error) {
-    console.error('Error processing loans:', error);
-    res.status(500).json({ error: 'Failed to process loans' });
-  }
+    try {
+        const metrics = await processLoans();
+        res.json(metrics);
+    } catch (error) {
+        console.error('Error processing loans:', error);
+        res.status(500).json({ error: 'Failed to process loans' });
+    }
 });
 
 app.get('/fetchLoans', async (req, res) => {
