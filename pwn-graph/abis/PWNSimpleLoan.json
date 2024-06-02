@@ -1,0 +1,443 @@
+[
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_hub", "type": "address" },
+      { "internalType": "address", "name": "_loanToken", "type": "address" },
+      { "internalType": "address", "name": "_config", "type": "address" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "name": "CallerMissingHubTag",
+    "type": "error"
+  },
+  { "inputs": [], "name": "CallerNotLOANTokenHolder", "type": "error" },
+  { "inputs": [], "name": "IncompleteTransfer", "type": "error" },
+  { "inputs": [], "name": "InvalidCollateralAsset", "type": "error" },
+  { "inputs": [], "name": "InvalidExtendedExpirationDate", "type": "error" },
+  { "inputs": [], "name": "InvalidLoanAsset", "type": "error" },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "name": "InvalidLoanStatus",
+    "type": "error"
+  },
+  {
+    "inputs": [{ "internalType": "uint40", "name": "", "type": "uint40" }],
+    "name": "LoanDefaulted",
+    "type": "error"
+  },
+  { "inputs": [], "name": "NonExistingLoan", "type": "error" },
+  { "inputs": [], "name": "UnsupportedTransferFunction", "type": "error" },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "loanId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "bool",
+        "name": "defaulted",
+        "type": "bool"
+      }
+    ],
+    "name": "LOANClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "loanId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          { "internalType": "address", "name": "lender", "type": "address" },
+          { "internalType": "address", "name": "borrower", "type": "address" },
+          { "internalType": "uint40", "name": "expiration", "type": "uint40" },
+          {
+            "components": [
+              {
+                "internalType": "enum MultiToken.Category",
+                "name": "category",
+                "type": "uint8"
+              },
+              {
+                "internalType": "address",
+                "name": "assetAddress",
+                "type": "address"
+              },
+              { "internalType": "uint256", "name": "id", "type": "uint256" },
+              { "internalType": "uint256", "name": "amount", "type": "uint256" }
+            ],
+            "internalType": "struct MultiToken.Asset",
+            "name": "collateral",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "enum MultiToken.Category",
+                "name": "category",
+                "type": "uint8"
+              },
+              {
+                "internalType": "address",
+                "name": "assetAddress",
+                "type": "address"
+              },
+              { "internalType": "uint256", "name": "id", "type": "uint256" },
+              { "internalType": "uint256", "name": "amount", "type": "uint256" }
+            ],
+            "internalType": "struct MultiToken.Asset",
+            "name": "asset",
+            "type": "tuple"
+          },
+          {
+            "internalType": "uint256",
+            "name": "loanRepayAmount",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct PWNLOANTerms.Simple",
+        "name": "terms",
+        "type": "tuple"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "factoryDataHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "factoryAddress",
+        "type": "address"
+      }
+    ],
+    "name": "LOANCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "loanId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint40",
+        "name": "extendedExpirationDate",
+        "type": "uint40"
+      }
+    ],
+    "name": "LOANExpirationDateExtended",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "loanId",
+        "type": "uint256"
+      }
+    ],
+    "name": "LOANPaidBack",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "enum MultiToken.Category",
+            "name": "category",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "assetAddress",
+            "type": "address"
+          },
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "uint256", "name": "amount", "type": "uint256" }
+        ],
+        "indexed": false,
+        "internalType": "struct MultiToken.Asset",
+        "name": "asset",
+        "type": "tuple"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "origin",
+        "type": "address"
+      }
+    ],
+    "name": "VaultPull",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "enum MultiToken.Category",
+            "name": "category",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "assetAddress",
+            "type": "address"
+          },
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "uint256", "name": "amount", "type": "uint256" }
+        ],
+        "indexed": false,
+        "internalType": "struct MultiToken.Asset",
+        "name": "asset",
+        "type": "tuple"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      }
+    ],
+    "name": "VaultPush",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "enum MultiToken.Category",
+            "name": "category",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "assetAddress",
+            "type": "address"
+          },
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "uint256", "name": "amount", "type": "uint256" }
+        ],
+        "indexed": false,
+        "internalType": "struct MultiToken.Asset",
+        "name": "asset",
+        "type": "tuple"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "origin",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      }
+    ],
+    "name": "VaultPushFrom",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_EXPIRATION_EXTENSION",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "loanId", "type": "uint256" }
+    ],
+    "name": "claimLOAN",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "loanTermsFactoryContract",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "loanTermsFactoryData",
+        "type": "bytes"
+      },
+      { "internalType": "bytes", "name": "signature", "type": "bytes" },
+      { "internalType": "bytes", "name": "loanAssetPermit", "type": "bytes" },
+      { "internalType": "bytes", "name": "collateralPermit", "type": "bytes" }
+    ],
+    "name": "createLOAN",
+    "outputs": [
+      { "internalType": "uint256", "name": "loanId", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "loanId", "type": "uint256" },
+      {
+        "internalType": "uint40",
+        "name": "extendedExpirationDate",
+        "type": "uint40"
+      }
+    ],
+    "name": "extendLOANExpirationDate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "loanId", "type": "uint256" }
+    ],
+    "name": "getLOAN",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint8", "name": "status", "type": "uint8" },
+          { "internalType": "address", "name": "borrower", "type": "address" },
+          { "internalType": "uint40", "name": "expiration", "type": "uint40" },
+          {
+            "internalType": "address",
+            "name": "loanAssetAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "loanRepayAmount",
+            "type": "uint256"
+          },
+          {
+            "components": [
+              {
+                "internalType": "enum MultiToken.Category",
+                "name": "category",
+                "type": "uint8"
+              },
+              {
+                "internalType": "address",
+                "name": "assetAddress",
+                "type": "address"
+              },
+              { "internalType": "uint256", "name": "id", "type": "uint256" },
+              { "internalType": "uint256", "name": "amount", "type": "uint256" }
+            ],
+            "internalType": "struct MultiToken.Asset",
+            "name": "collateral",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct PWNSimpleLoan.LOAN",
+        "name": "loan",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+    ],
+    "name": "getStateFingerprint",
+    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "loanMetadataUri",
+    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "uint256[]", "name": "", "type": "uint256[]" },
+      { "internalType": "uint256[]", "name": "", "type": "uint256[]" },
+      { "internalType": "bytes", "name": "", "type": "bytes" }
+    ],
+    "name": "onERC1155BatchReceived",
+    "outputs": [{ "internalType": "bytes4", "name": "", "type": "bytes4" }],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "operator", "type": "address" },
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "bytes", "name": "", "type": "bytes" }
+    ],
+    "name": "onERC1155Received",
+    "outputs": [{ "internalType": "bytes4", "name": "", "type": "bytes4" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "operator", "type": "address" },
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "bytes", "name": "", "type": "bytes" }
+    ],
+    "name": "onERC721Received",
+    "outputs": [{ "internalType": "bytes4", "name": "", "type": "bytes4" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "loanId", "type": "uint256" },
+      { "internalType": "bytes", "name": "loanAssetPermit", "type": "bytes" }
+    ],
+    "name": "repayLOAN",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" }
+    ],
+    "name": "supportsInterface",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "pure",
+    "type": "function"
+  }
+]

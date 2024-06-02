@@ -1,0 +1,44 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: PWNSimpleLoan
+    network: mainnet
+    source:
+      address: "0x57c88D78f6D08b5c88b4A3b7BbB0C1AA34c3280A"
+      abi: PWNSimpleLoan
+      startBlock: 17878024
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - LOANClaimed
+        - LOANCreated
+        - LOANExpirationDateExtended
+        - LOANPaidBack
+        - VaultPull
+        - VaultPush
+        - VaultPushFrom
+      abis:
+        - name: PWNSimpleLoan
+          file: ./abis/PWNSimpleLoan.json
+      eventHandlers:
+        - event: LOANClaimed(indexed uint256,indexed bool)
+          handler: handleLOANClaimed
+        - event: LOANCreated(indexed uint256,(address,address,uint40,(uint8,address,uint256,uint256),(uint8,address,uint256,uint256),uint256),indexed bytes32,indexed address)
+          handler: handleLOANCreated
+        - event: LOANExpirationDateExtended(indexed uint256,uint40)
+          handler: handleLOANExpirationDateExtended
+        - event: LOANPaidBack(indexed uint256)
+          handler: handleLOANPaidBack
+        - event: VaultPull((uint8,address,uint256,uint256),indexed address)
+          handler: handleVaultPull
+        - event: VaultPush((uint8,address,uint256,uint256),indexed address)
+          handler: handleVaultPush
+        - event: VaultPushFrom((uint8,address,uint256,uint256),indexed address,indexed address)
+          handler: handleVaultPushFrom
+      file: ./src/pwn-simple-loan.ts

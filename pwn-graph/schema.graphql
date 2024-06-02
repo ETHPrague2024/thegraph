@@ -1,0 +1,84 @@
+type LOANClaimed @entity(immutable: true) {
+  id: Bytes!
+  loanId: BigInt! # uint256
+  defaulted: Boolean! # bool
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type LOANCreated @entity(immutable: true) {
+  id: Bytes!
+  loanId: BigInt! # uint256
+  terms_lender: Bytes! # address
+  terms_borrower: Bytes! # address
+  terms_expiration: BigInt! # uint40
+  terms_collateral_category: Int! # uint8
+  terms_collateral_assetAddress: Bytes! # address
+  terms_collateral_id: BigInt! # uint256
+  terms_collateral_amount: BigInt! # uint256
+  terms_asset_category: Int! # uint8
+  terms_asset_assetAddress: Bytes! # address
+  terms_asset_id: BigInt! # uint256
+  terms_asset_amount: BigInt! # uint256
+  terms_loanRepayAmount: BigInt! # uint256
+  factoryDataHash: Bytes! # bytes32
+  factoryAddress: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type LOANExpirationDateExtended @entity(immutable: true) {
+  id: Bytes!
+  loanId: BigInt! # uint256
+  extendedExpirationDate: BigInt! # uint40
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type LOANPaidBack @entity(immutable: true) {
+  id: Bytes!
+  loanId: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type VaultPull @entity(immutable: true) {
+  id: Bytes!
+  asset_category: Int! # uint8
+  asset_assetAddress: Bytes! # address
+  asset_id: BigInt! # uint256
+  asset_amount: BigInt! # uint256
+  origin: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type VaultPush @entity(immutable: true) {
+  id: Bytes!
+  asset_category: Int! # uint8
+  asset_assetAddress: Bytes! # address
+  asset_id: BigInt! # uint256
+  asset_amount: BigInt! # uint256
+  beneficiary: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type VaultPushFrom @entity(immutable: true) {
+  id: Bytes!
+  asset_category: Int! # uint8
+  asset_assetAddress: Bytes! # address
+  asset_id: BigInt! # uint256
+  asset_amount: BigInt! # uint256
+  origin: Bytes! # address
+  beneficiary: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
